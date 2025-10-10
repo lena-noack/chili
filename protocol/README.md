@@ -23,6 +23,9 @@ with
 
 ## Directory structure
 
+> [!IMPORTANT]  
+> Each individual output file should not exceed a file size of 1 MB!
+
 Each model has its own directory in ``inputs`` and ``outputs`` to store input files and outputs.
 Each model should adhere to the following structure:
 ```
