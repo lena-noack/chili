@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-_gas_colors = {
+_colors = {
     # H rich
     "H2": "#008C01",
     "H2O": "#027FB1",
@@ -22,15 +22,27 @@ _gas_colors = {
     "N2": "#870036",
     "NH3": "#675200",
 }
+gas_list = list(_colors.keys())
 
-_model_colors = {
+for k in gas_list:
+    _colors[f"p_{k}(bar)"] = _colors[k]
+
+_colors.update({
     "proteus":   "#1f77b4",
     "pacman":    "#ff7f0e",
     "lincs":     "#2ca02c",
     "gooey":     "#d62728",
     "neongooey": "#ff7086",
     "moai":      "#8c564b",
-}
+    "p_surf(bar)": "#444444"
+})
+
+def get_color(thing:str):
+    if thing in _colors:
+        return _colors[thing]
+    else:
+        print(f"WARNING: Plotting color for '{thing}' not defined")
+        return "#222222"
 
 _labels = {
 "t(yr)":           "Time [yr]" ,
@@ -69,10 +81,13 @@ _labels = {
 
 "proteus": "PROTEUS",
 "pacman": "PACMAN",
-"neongooey": "NeonGOOEY",
+"neongooey": "NEON-GOOEY",
 "gooey": "GOOEY",
 "lincs": "LINCS",
-"moai": "MOAI"
+"moai": "MOAI",
+
+"earth": "Earth",
+"venus": "Venus",
 }
 
 def get_label(key:str):
@@ -80,15 +95,6 @@ def get_label(key:str):
         return _labels[key]
     else:
         return key
-
-def get_color(thing:str):
-    if thing in _gas_colors:
-        return _gas_colors[thing]
-    elif thing in _model_colors:
-        return _model_colors[thing]
-    else:
-        print(f"WARNING: Plotting color for '{thing}' not defined")
-        return "#222222"
 
 
 def list_planets():
@@ -110,44 +116,43 @@ def load_model_data(model:str):
     if not os.path.isdir(model_dir):
         raise FileNotFoundError(f"Model directory '{model_dir}' not found.")
 
-    # load files for each combination of H/C/planet
+    print("Loading model " + model)
+
+    # load files for each planet
     model_data = {"earth":{}, "venus":{}}
     for planet in ["earth", "venus"]:
-        for Hf in ["Hhigh", "Hmid", "Hlow", ""]:
-            if Hf == "":
-                Hk = f"Hlow"
-                Hf = ""
-            else:
-                Hk = Hf
-                Hf = f"-{Hf}"
-                
-                
-            for Cf in ["Chigh", "Cmid", "Clow", ""]:
-                if Cf == "":
-                    Ck = f"-Clow"
-                    Cf = ""
-                else:
-                    Ck = f"-{Cf}"
-                    Cf = f"-{Cf}"
-                    
+        print(f"    {planet}")
 
-                k = f"{Hk}{Ck}"
+        # for nominal case
+        f = os.path.join(model_dir,  f"evolution-{model}-{planet}-data.csv")
+        if os.path.isfile(f):
+            print("        nominal")
+            model_data[planet]["nominal-evo"] = pd.read_csv(f)
+
+        # for each H/C combination
+        for Hk in ["Hhigh", "Hmid", "Hlow"]:
+            for Ck in ["Chigh", "Cmid", "Clow"]:
+                k = f"{Hk}-{Ck}"
+                print(f"        {k}")
 
                 # evolution data
-                f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid{Hf}{Cf}-data.csv")
+                f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid-{Hk}-{Ck}-data.csv")
                 if os.path.isfile(f):
                     model_data[planet][f"{k}-evo"] = pd.read_csv(f)
 
+                else:
+                    f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid-{Hk}-data.csv") # no carbon
+                    if os.path.isfile(f):
+                        model_data[planet][f"{k}-evo"] = pd.read_csv(f)
+
                 # atmosphere profile data
                 for tau in [1,2,3,4,5,6,7,8,9]:
-                    f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid{Hf}{Cf}-tau{tau}-data.csv")
+                    f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid-{Hk}-{Ck}-tau{tau}-data.csv")
                     if os.path.isfile(f):
                         model_data[planet][f"{k}-tau{tau}"] = pd.read_csv(f)
 
     # check we loaded something...
     if all(v is None for v in model_data[planet].values()):
-        print(f"WARNING: No evolution data found for model '{model}', planet '{planet}'.")
-    if all(v is None for v in model_data[planet].values()):
-        print(f"WARNING: No atmosphere profile data found for model '{model}', planet '{planet}'.")
+        print(f"    WARNING: No evolution data found for model '{model}', planet '{planet}'.")
         
     return model_data
