@@ -21,8 +21,18 @@ _colors = {
     "H2SO4": "#46eba4",
     "N2": "#870036",
     "NH3": "#675200",
+
+    # volatile elements
+    "H"  : "#0000aa",
+    "C"  : "#ff0000",
+    "O"  : "#00cc00",
+    "N"  : "#ffaa00",
+    "S" :  "#ff22ff",
+    "P" :  "#33ccff",
+    "He" : "#30FF71",
 }
 gas_list = list(_colors.keys())
+chili_gases = ["H2O", "CO2", "H2", "CO", "CH4", "O2"]
 
 for k in gas_list:
     _colors[f"p_{k}(bar)"] = _colors[k]
@@ -105,9 +115,22 @@ def list_models():
     outputs_dir = os.path.join(os.path.dirname(__file__), "..", "outputs")
     if not os.path.isdir(outputs_dir):
         raise FileNotFoundError(f"Outputs directory '{outputs_dir}' not found.")
-    return os.listdir(outputs_dir)
+    
+    subdirs = os.listdir(outputs_dir)
 
-def load_model_data(model:str):
+    # sort by name
+    subdirs.sort()
+    subdirs.reverse()
+
+    # place gooey and neongooey together 
+    if "gooey" in subdirs and "neongooey" in subdirs:
+        gooey_index = subdirs.index("gooey")
+        neongooey_index = subdirs.index("neongooey")
+        subdirs.insert(gooey_index + 1, subdirs.pop(neongooey_index))
+
+    return subdirs
+
+def load_model_data(model:str, quiet=False):
     """Load the model data from the CSV file."""
 
     # check if model directory exists
@@ -121,19 +144,19 @@ def load_model_data(model:str):
     # load files for each planet
     model_data = {"earth":{}, "venus":{}}
     for planet in ["earth", "venus"]:
-        print(f"    {planet}")
+        quiet or print(f"    {planet}")
 
         # for nominal case
         f = os.path.join(model_dir,  f"evolution-{model}-{planet}-data.csv")
         if os.path.isfile(f):
-            print("        nominal")
+            quiet or print("        nominal")
             model_data[planet]["nominal-evo"] = pd.read_csv(f)
 
         # for each H/C combination
         for Hk in ["Hhigh", "Hmid", "Hlow"]:
             for Ck in ["Chigh", "Cmid", "Clow"]:
                 k = f"{Hk}-{Ck}"
-                print(f"        {k}")
+                quiet or print(f"        {k}")
 
                 # evolution data
                 f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid-{Hk}-{Ck}-data.csv")
