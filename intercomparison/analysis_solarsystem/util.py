@@ -54,6 +54,15 @@ def get_color(thing:str):
         print(f"WARNING: Plotting color for '{thing}' not defined")
         return "#222222"
 
+def latexify(s:str):
+    l = ""
+    for c in s:
+        if c.isnumeric():
+            l += r"$_{" + c + "}$"
+        else:
+            l += c
+    return l
+
 _labels = {
 "t(yr)":           "Time [yr]" ,
 "T_surf(K)":        r"$T_{\rm surf}$ [K]",
@@ -61,7 +70,7 @@ _labels = {
 "flux_surf(W/m2)":  r"$F_{\rm surf}$ [W m$^{-2}$]",
 "flux_OLR(W/m2)":   r"$F_{\rm OLR}$ [W m$^{-2}$]",
 "flux_ASR(W/m2)":   r"$F_{\rm ASR}$ [W m$^{-2}$]",
-"phi(vol_frac)":    r"Melt frac.",
+"phi(vol_frac)":    r"Melt volume fraction",
 "fO2_solid(bar)":   r"$f_{\rm O2,solid}$ [bar]",
 "fO2_melt(bar)":    r"$f_{\rm O2,melt}$ [bar]",
 "thick_surf_bl(m)": r"$d_{\rm CBL}$ [m]",
@@ -99,6 +108,9 @@ _labels = {
 "earth": "Earth",
 "venus": "Venus",
 }
+
+for k in gas_list:
+    _labels[k] = latexify(k)
 
 def get_label(key:str):
     if key in _labels.keys():
