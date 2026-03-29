@@ -2,14 +2,13 @@ version = "2.0"
 
 [params]
 resume = false
-offline = false
-
+offline = true
 [params.out]
-path = "chili_tr1a/"
+path = "scratch/chili_tr1a/"
 logging = "INFO"
 plot_fmt = "pdf"
-write_mod = 2
-plot_mod = 30
+write_mod = 4
+plot_mod = 40
 archive_mod = "none"
 remove_sf = true
 
@@ -17,21 +16,20 @@ remove_sf = true
 starspec = 1000000000.0
 starinst = 10.0
 method = "adaptive"
-minimum = 1000.0
-minimum_rel = 1e-05
+minimum = 100.0
+minimum_rel = 0.005
 maximum = 10000000.0
-initial = 30.0
+initial = 10.0
 
 [params.dt.proportional]
 propconst = 52.0
 
 [params.dt.adaptive]
-atol = 0.02
-rtol = 0.09
+atol = 0.04
+rtol = 0.11
 
 [params.stop]
 strict = false
-
 [params.stop.iters]
 enabled = true
 minimum = 5
@@ -70,10 +68,17 @@ bol_scale = 0.39995258416311047
 
 [star.mors]
 age_now = 7.6
-spec = "stellar_spectra/Named/trappist-1.txt"
+star_name = "sun"
+star_path = "none"
 rot_pcntle = 50.0
 rot_period = "none"
 tracks = "spada"
+spectrum_source = "solar"
+phoenix_FeH = 0.0
+phoenix_alpha = 0.0
+phoenix_radius = "none"
+phoenix_log_g = "none"
+phoenix_Teff = "none"
 
 [star.dummy]
 Teff = 5772.0
@@ -107,6 +112,12 @@ ncalc = 1000
 corefrac = 0.55
 module = "self"
 zalmoxis = "none"
+update_interval = 0
+update_min_interval = 0
+update_dtmagma_frac = 0.03
+update_dphi_abs = 0.05
+mesh_max_shift = 0.05
+mesh_convergence_interval = 10.0
 core_density = 10738.33
 core_heatcap = 880.0
 mass_tot = 1.0
@@ -156,7 +167,7 @@ dx_max_ini = 200.0
 max_steps = 70
 perturb_all = true
 mlt_criterion = "s"
-fastchem_floor = 500.0
+fastchem_floor = 700.0
 fastchem_maxiter_chem = 60000
 fastchem_maxiter_solv = 20000
 fastchem_xtol_chem = 0.0001
@@ -164,6 +175,7 @@ fastchem_xtol_elem = 0.0001
 ini_profile = "isothermal"
 ls_default = 1
 fdo = 2
+check_safe_gas = true
 
 [atmos_clim.janus]
 spectral_group = "none"
@@ -205,16 +217,36 @@ reservoir = "outgas"
 
 [escape.zephyrus]
 Pxuv = 5e-05
-efficiency = 0.1
+efficiency = 0.3
 tidal = true
 
 [escape.dummy]
-rate = "none"
+rate = 0.0
+
+[escape.boreas]
+fractionate = true
+efficiency = 0.1
+sigma_H = 1.89e-18
+sigma_O = 2e-18
+sigma_C = 2.5e-18
+sigma_N = 3e-18
+sigma_S = 6e-18
+kappa_H2 = 0.01
+kappa_H2O = 1.0
+kappa_O2 = 1.0
+kappa_CO2 = 1.0
+kappa_CO = 1.0
+kappa_CH4 = 1.0
+kappa_N2 = 1.0
+kappa_NH3 = 1.0
+kappa_H2S = 1.0
+kappa_SO2 = 1.0
+kappa_S2 = 1.0
 
 [interior]
 module = "spider"
 melting_dir = "Monteux-600"
-lookup_dir = "1TPa-dK09-elec-free/MgSiO3_Wolf_Bower_2018_1TPa"
+eos_dir = "WolfBower2018_MgSiO3"
 radiogenic_heat = true
 tidal_heat = false
 grain_size = 0.1
@@ -225,7 +257,7 @@ rheo_phi_wid = 0.2
 [interior.spider]
 ini_entropy = 3900.0
 ini_dsdr = -4.698e-06
-num_levels = 150
+num_levels = 90
 mixing_length = 2
 tolerance = 1e-08
 tolerance_rel = 1e-08

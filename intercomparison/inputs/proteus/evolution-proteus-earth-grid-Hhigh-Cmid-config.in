@@ -3,13 +3,12 @@ version = "2.0"
 [params]
 resume = false
 offline = true
-
 [params.out]
-path = "chili_earth_grid//case_000007/"
+path = "scratch/chili_earth_grid//case_000007/"
 logging = "INFO"
 plot_fmt = "pdf"
-write_mod = 2
-plot_mod = 30
+write_mod = 4
+plot_mod = 40
 archive_mod = "none"
 remove_sf = true
 
@@ -17,21 +16,20 @@ remove_sf = true
 starspec = 1000000000.0
 starinst = 10.0
 method = "adaptive"
-minimum = 1000.0
-minimum_rel = 1e-05
+minimum = 100.0
+minimum_rel = 0.005
 maximum = 10000000.0
-initial = 30.0
+initial = 10.0
 
 [params.dt.proportional]
 propconst = 52.0
 
 [params.dt.adaptive]
-atol = 0.02
-rtol = 0.09
+atol = 0.04
+rtol = 0.11
 
 [params.stop]
 strict = false
-
 [params.stop.iters]
 enabled = true
 minimum = 5
@@ -70,10 +68,17 @@ bol_scale = 0.9151497065552572
 
 [star.mors]
 age_now = 4.567
-spec = "stellar_spectra/Named/sun.txt"
+star_name = "sun"
+star_path = "none"
 rot_pcntle = 50.0
 rot_period = "none"
 tracks = "spada"
+spectrum_source = "solar"
+phoenix_FeH = 0.0
+phoenix_alpha = 0.0
+phoenix_radius = "none"
+phoenix_log_g = "none"
+phoenix_Teff = "none"
 
 [star.dummy]
 Teff = 5772.0
@@ -106,16 +111,27 @@ ncalc = 1000
 [struct]
 corefrac = 0.55
 module = "self"
+update_interval = 0.0
+update_min_interval = 0.0
+update_dtmagma_frac = 0.03
+update_dphi_abs = 0.05
+mesh_max_shift = 0.05
+mesh_convergence_interval = 10.0
 core_density = 10738.33
 core_heatcap = 880.0
 mass_tot = 1.0
 radius_int = "none"
 
 [struct.zalmoxis]
-EOSchoice = "Tabulated:iron/silicate"
+core_eos = "Seager2007:iron"
+mantle_eos = "Seager2007:MgSiO3"
+ice_layer_eos = ""
 coremassfrac = 0.325
 mantle_mass_fraction = 0
-weight_iron_frac = 0.325
+temperature_mode = "isothermal"
+surface_temperature = 3500
+center_temperature = 6000
+temperature_profile_file = "none"
 num_levels = 150
 max_iterations_outer = 100
 tolerance_outer = 0.003
@@ -123,11 +139,14 @@ max_iterations_inner = 100
 tolerance_inner = 0.0001
 relative_tolerance = 1e-05
 absolute_tolerance = 1e-06
+maximum_step = 250000
+adaptive_radial_fraction = 0.98
+max_center_pressure_guess = 990000000000.0
 target_surface_pressure = 101325
 pressure_tolerance = 1000000000.0
 max_iterations_pressure = 200
-pressure_adjustment_factor = 1.1
 verbose = false
+iteration_profiles_enabled = false
 
 [atmos_clim]
 module = "agni"
@@ -173,7 +192,7 @@ dx_max_ini = 200.0
 max_steps = 70
 perturb_all = true
 mlt_criterion = "s"
-fastchem_floor = 500.0
+fastchem_floor = 700.0
 fastchem_maxiter_chem = 60000
 fastchem_maxiter_solv = 20000
 fastchem_xtol_chem = 0.0001
@@ -181,6 +200,7 @@ fastchem_xtol_elem = 0.0001
 ini_profile = "isothermal"
 ls_default = 1
 fdo = 2
+check_safe_gas = true
 
 [atmos_clim.janus]
 spectral_group = "none"
@@ -222,16 +242,36 @@ reservoir = "outgas"
 
 [escape.zephyrus]
 Pxuv = 5e-05
-efficiency = 0.1
+efficiency = 0.3
 tidal = true
 
 [escape.dummy]
-rate = "none"
+rate = 0.0
+
+[escape.boreas]
+fractionate = true
+efficiency = 0.1
+sigma_H = 1.89e-18
+sigma_O = 2e-18
+sigma_C = 2.5e-18
+sigma_N = 3e-18
+sigma_S = 6e-18
+kappa_H2 = 0.01
+kappa_H2O = 1.0
+kappa_O2 = 1.0
+kappa_CO2 = 1.0
+kappa_CO = 1.0
+kappa_CH4 = 1.0
+kappa_N2 = 1.0
+kappa_NH3 = 1.0
+kappa_H2S = 1.0
+kappa_SO2 = 1.0
+kappa_S2 = 1.0
 
 [interior]
 module = "spider"
 melting_dir = "Monteux-600"
-lookup_dir = "1TPa-dK09-elec-free/MgSiO3_Wolf_Bower_2018_1TPa"
+eos_dir = "WolfBower2018_MgSiO3"
 radiogenic_heat = true
 tidal_heat = false
 grain_size = 0.1
