@@ -1,6 +1,9 @@
 import pandas as pd
 import os
 
+Rearth = 6371e3
+Mearth = 5.972e24
+
 _colors = {
     # H rich
     "H2": "#008C01",
@@ -23,13 +26,15 @@ _colors = {
     "NH3": "#675200",
 
     # volatile elements
-    "H"  : "#0000aa",
-    "C"  : "#ff0000",
-    "O"  : "#00cc00",
+    "H"  : "#008C01",
+    "C"  : "#D24901",
+    "O"  : "#00ff00",
     "N"  : "#ffaa00",
     "S" :  "#ff22ff",
     "P" :  "#33ccff",
     "He" : "#30FF71",
+
+    "p_surf(bar)": "#444444",
 }
 gas_list = list(_colors.keys())
 chili_gases = ["H2O", "CO2", "H2", "CO", "CH4", "O2"]
@@ -37,18 +42,20 @@ chili_gases = ["H2O", "CO2", "H2", "CO", "CH4", "O2"]
 for k in gas_list:
     _colors[f"p_{k}(bar)"] = _colors[k]
 
-_colors.update({
-    "proteus":   "#1f77b4",
-    "pacman":    "#ff7f0e",
-    "lincs":     "#2ca02c",
-    "gooey":     "#d62728",
-    "neongooey": "#ff7086",
-    "moai":      "#8c564b",
-    "p_surf(bar)": "#444444"
-})
+chili_models = {
+    "gooey":     ("GOOEY","#d62728"),
+    "neongooey": ("NEONGOOEY","#ff7086"),
+    "lincs":     ("LINCS","#2ca02c"),
+    "moai":      ("MOAI","#9B9B9B"),
+    "pacman":    ("PACMAN","#0e6eff"),
+    "proteus":   ("PROTEUS","#FFA568"),
+    "planatmo":  ("PlanAtMO","#9C028C"),
+}
 
 def get_color(thing:str):
-    if thing in _colors:
+    if thing in chili_models:
+        return chili_models[thing][1]
+    elif thing in _colors:
         return _colors[thing]
     else:
         print(f"WARNING: Plotting color for '{thing}' not defined")
@@ -64,13 +71,16 @@ def latexify(s:str):
     return l
 
 _labels = {
-"t(yr)":           "Time [yr]" ,
+"t(yr)":           "Model time [yr]" ,
 "T_surf(K)":        r"$T_{\rm surf}$ [K]",
 "T_pot(K)":         r"$T_{\rm pot}$ [K]",
 "flux_surf(W/m2)":  r"$F_{\rm surf}$ [W m$^{-2}$]",
 "flux_OLR(W/m2)":   r"$F_{\rm OLR}$ [W m$^{-2}$]",
 "flux_ASR(W/m2)":   r"$F_{\rm ASR}$ [W m$^{-2}$]",
 "phi(vol_frac)":    r"Melt volume fraction",
+"phi(vol_pct)":     r"Melt fraction [vol%]",
+"phi(mass_frac)":   r"Melt mass fraction",
+"phi(mass_pct)":    r"Melt fraction [wt%]",
 "fO2_solid(bar)":   r"$f_{\rm O2,solid}$ [bar]",
 "fO2_melt(bar)":    r"$f_{\rm O2,melt}$ [bar]",
 "thick_surf_bl(m)": r"$d_{\rm CBL}$ [m]",
@@ -98,13 +108,6 @@ _labels = {
 "R_solid(m)":       r"$R_{\rm solid}$ [m]",
 "viscosity(Pa.s)":  r"Viscosity [Pa s]",
 
-"proteus": "PROTEUS",
-"pacman": "PACMAN",
-"neongooey": "NEON-GOOEY",
-"gooey": "GOOEY",
-"lincs": "LINCS",
-"moai": "MOAI",
-
 "earth": "Earth",
 "venus": "Venus",
 }
@@ -112,35 +115,38 @@ _labels = {
 for k in gas_list:
     _labels[k] = latexify(k)
 
-def get_label(key:str):
-    if key in _labels.keys():
-        return _labels[key]
+def get_label(thing:str):
+    if thing in chili_models:
+        return chili_models[thing][0]
+    elif thing in _labels.keys():
+        return _labels[thing]
     else:
-        return key
-
+        return thing
 
 def list_planets():
     return ("earth", "venus")
 
 def list_models():
     """List the available models in the outputs directory."""
+
+    # expected models
+    expected_models = list(chili_models.keys())
+
+    # get output folders
     outputs_dir = os.path.join(os.path.dirname(__file__), "..", "outputs")
     if not os.path.isdir(outputs_dir):
         raise FileNotFoundError(f"Outputs directory '{outputs_dir}' not found.")
-    
     subdirs = os.listdir(outputs_dir)
 
-    # sort by name
-    subdirs.sort()
-    subdirs.reverse()
+    # check which expected models are present
+    if set(expected_models) != set(subdirs):
+        print(f"WARNING: Expected models do not match found models.")
+        print(f"         Expected models: {expected_models}")
+        print(f"         Found models: {subdirs}")
 
-    # place gooey and neongooey together 
-    if "gooey" in subdirs and "neongooey" in subdirs:
-        gooey_index = subdirs.index("gooey")
-        neongooey_index = subdirs.index("neongooey")
-        subdirs.insert(gooey_index + 1, subdirs.pop(neongooey_index))
+    # remove any expected models that are not found
+    return [m for m in expected_models if m in subdirs]
 
-    return subdirs
 
 def load_model_data(model:str, quiet=False):
     """Load the model data from the CSV file."""
