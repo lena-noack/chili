@@ -197,3 +197,28 @@ def load_model_data(model:str, quiet=False):
         print(f"    WARNING: No evolution data found for model '{model}', planet '{planet}'.")
         
     return model_data
+
+def get_melting_curves(model):
+    out = None
+
+    # find the file
+    file = None
+    for f in os.listdir(f"melting_curves"):
+        if f.startswith(model):
+            if file is not None:
+                print(f"WARNING: Multiple meltings found for '{model}'")
+            file = f
+
+    if file is None:
+        print(f"WARNING: No melting curve found for '{model}'")
+        return out
+    
+    # load the file
+    data = pd.read_csv(f"melting_curves/{file}", sep=r"\s+")
+
+    out = {}
+    out["p"]    = data["pressure[Pa]"].values
+    out["tsol"] = data["solidus[K]"].values
+    out["tliq"] = data["liquidus[K]"].values
+
+    return out
