@@ -49,14 +49,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
    \author{A. de Larminat\inst{1}
-        \and H. Samuel\inst{1}\fnmsep\thanks{Corresponding author: samuel@ipgp.fr}
-        \and E. Marq\inst{2}
-        }
+        \and H. Samuel\inst{1}\fnmsep\thanks{Corresponding author: samuel@ipgp.fr}}
 
-   \institute{{Institut de Physique du Globe de Paris, CNRS, Université Paris Cité, Paris, France
-   \and LATMOS/IPSL, Université Paris-Saclay, Guyancourt, France}}
+   \institute{{Institut de Physique du Globe de Paris, CNRS, Université Paris Cité, Paris, France}}
 
-   \date{Received March 3, 2026}
+   \date{Received April 13, 2026}
 
 %\abstract{}{}{}{}{}
 
