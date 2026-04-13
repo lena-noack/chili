@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 
 Rearth = 6371e3
@@ -216,8 +217,20 @@ def get_melting_curves(model):
     # load the file
     data = pd.read_csv(f"melting_curves/{file}", sep=r"\s+")
 
-    out = {}
-    out["p"]    = data["pressure[Pa]"].values
+    out = {"p":None, "d":None}
+    # independent variables
+    if "pressure[Pa]" in data.columns:
+        out["p"] = data["pressure[Pa]"].values / 1e9  # GPa
+    if "radius[km]" in data.columns:
+        x = data["radius[km]"].values
+        out["d"] = np.amax(x) - x
+    elif "depth[km]" in data.columns:
+        out["d"] = data["depth[km]"].values
+
+    if out["p"] is None and out["d"] is None:
+        print(f"WARNING: No independent variable found for melting curve '{model}'")
+
+    # dependent variables
     out["tsol"] = data["solidus[K]"].values
     out["tliq"] = data["liquidus[K]"].values
 
