@@ -202,20 +202,23 @@ def load_model_data(model:str, quiet=False):
 def get_melting_curves(model):
     out = None
 
+    # directory
+    melting_dir = "../melting_curves"
+
     # find the file
     file = None
-    for f in os.listdir(f"melting_curves"):
+    for f in os.listdir(melting_dir):
         if f.startswith(model):
             if file is not None:
                 print(f"WARNING: Multiple meltings found for '{model}'")
-            file = f
+            file = os.path.abspath(os.path.join(melting_dir, f))
 
     if file is None:
         print(f"WARNING: No melting curve found for '{model}'")
         return out
     
     # load the file
-    data = pd.read_csv(f"melting_curves/{file}", sep=r"\s+")
+    data = pd.read_csv(file, sep=r"\s+")
 
     out = {"p":None, "d":None}
     # independent variables
