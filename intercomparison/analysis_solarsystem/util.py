@@ -47,7 +47,7 @@ chili_models = {
     "gooey":     ("GOOEY","#d62728"),
     "neongooey": ("NEONGOOEY","#ff7086"),
     "lincs":     ("LINCS","#2ca02c"),
-    "moai":      ("MOAI","#9B9B9B"),
+    "moai":      ("MOAI","#757E56"),
     "pacman":    ("PACMAN","#0e6eff"),
     "proteus":   ("PROTEUS","#FFA568"),
     "planatmo":  ("PlanAtMO","#9C028C"),
