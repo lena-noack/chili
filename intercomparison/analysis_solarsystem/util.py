@@ -4,6 +4,7 @@ import os
 
 Rearth = 6371e3
 Mearth = 5.972e24
+AU = 1.495979e+11
 
 _colors = {
     # H rich
@@ -44,13 +45,13 @@ for k in gas_list:
     _colors[f"p_{k}(bar)"] = _colors[k]
 
 chili_models = {
-    "gooey":     ("GOOEY","#d62728"),
-    "neongooey": ("NEONGOOEY","#ff7086"),
-    "proteus":   ("PROTEUS","#F0833B"),
+    "gooey":     ("GOOEY","#ea1717"),
+    "neongooey": ("NEONGOOEY","#f44560"),
+    "proteus":   ("PROTEUS","#EB7D0F"),
     "pacman":    ("PACMAN","#0e6eff"),
     "lincs":     ("LINCS","#2ca02c"),
-    "moai":      ("MOAI","#9C028C"),
-    "planatmo":  ("PlanAtMO","#8E8823"),
+    "moai":      ("MOAI","#9208B5"),
+    "planatmo":  ("PlanAtMO","#C4BD35"),
 }
 
 def get_color(thing:str):
@@ -238,3 +239,24 @@ def get_melting_curves(model):
     out["tliq"] = data["liquidus[K]"].values
 
     return out
+
+def get_instel_data(t_ini):
+    track = pd.read_csv("BHAC15.dat", sep=r"\s+", comment="#")
+
+    # dimensionalise and offset relative to t_ini
+    track_time = 10**track["logt(yr)"].values - t_ini
+    track_lum  = 10**track["L/Ls"].values * 3.839e26 # Watts
+
+    # remove data before t_ini
+    mask = track_time >= 0
+    track_time = track_time[mask]
+    track_lum = track_lum[mask]
+
+    data = {
+        "time" : track_time,
+        "lum"  : track_lum,
+        "S0_earth": track_lum / (4 * np.pi * (1.000*AU)**2),
+        "S0_venus": track_lum / (4 * np.pi * (0.723*AU)**2),
+    }
+
+    return data
