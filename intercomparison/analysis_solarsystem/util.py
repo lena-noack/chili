@@ -177,12 +177,9 @@ def correct_neongooey_carbon(model_df, Ck):
     else:
         raise ValueError(f"Unexpected carbon key '{Ck}'")
     
-    # sum over reservoirs
-    C_init_file = np.sum(model_df[["massC_solid(kg)", "massC_melt(kg)", "massC_atm(kg)"]].iloc[0].values)
-
     # scale factor
-    scale = C_init / C_init_file
-    print(f"            Scaling carbon mass columns by factor {scale:.2e} to correct initial carbon mass in file ({C_init_file:.2e} kg) to actual initial carbon mass ({C_init:.2e} kg).")
+    scale = C_init / 12.0107 * 44.0095
+    print(f"            Scaling carbon mass columns by factor {scale:.2e} to correct initial carbon mass in NEONGOOEY.")
 
     # apply scaling to carbon mass columns
     for col in ["massC_solid(kg)", "massC_melt(kg)", "massC_atm(kg)"]:
