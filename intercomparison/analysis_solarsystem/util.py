@@ -2,6 +2,11 @@ import pandas as pd
 import numpy as np
 import os
 
+# import matplotlib.pyplot as plt
+# import lisa
+# import feathers
+# cmap = plt.get_cmap('Escher')
+
 Rearth = 6371e3
 Mearth = 5.972e24
 AU = 1.495979e+11
@@ -53,6 +58,17 @@ chili_models = {
     "moai":      ("MOAI","#9208B5"),
     "planatmo":  ("PlanAtMO","#C4BD35"),
 }
+
+# chili_models = {
+#     "gooey":     ("GOOEY", cmap(0/6)),
+#     "neongooey": ("NEONGOOEY", cmap(1/6)),
+#     "proteus":   ("PROTEUS", cmap(2/6)),
+#     "pacman":    ("PACMAN", cmap(3/6)),
+#     "lincs":     ("LINCS", cmap(4/6)),
+#     "moai":      ("MOAI", cmap(5/6)),
+#     "planatmo":  ("PlanAtMO", cmap(6/6)),
+# }
+
 
 def get_color(thing:str):
     if thing in chili_models:
@@ -149,6 +165,30 @@ def list_models():
     # remove any expected models that are not found
     return [m for m in expected_models if m in subdirs]
 
+def correct_neongooey_carbon(model_df, Ck):
+    # keys: massC_solid(kg), massC_melt(kg), massC_atm(kg)
+    # scaling factor for first row = actual initial carbon mass / initial carbon mass in file
+    if Ck == "Chigh":
+        C_init = 5.44e20
+    elif Ck in ("Cmid", "nominal"):
+        C_init = 2.73e20
+    elif Ck == "Clow":
+        C_init = 1.36e20
+    else:
+        raise ValueError(f"Unexpected carbon key '{Ck}'")
+    
+    # sum over reservoirs
+    C_init_file = np.sum(model_df[["massC_solid(kg)", "massC_melt(kg)", "massC_atm(kg)"]].iloc[0].values)
+
+    # scale factor
+    scale = C_init / C_init_file
+    print(f"            Scaling carbon mass columns by factor {scale:.2e} to correct initial carbon mass in file ({C_init_file:.2e} kg) to actual initial carbon mass ({C_init:.2e} kg).")
+
+    # apply scaling to carbon mass columns
+    for col in ["massC_solid(kg)", "massC_melt(kg)", "massC_atm(kg)"]:
+        model_df[col] *= scale
+
+    return model_df
 
 def load_model_data(model:str, quiet=False):
     """Load the model data from the CSV file."""
@@ -172,6 +212,10 @@ def load_model_data(model:str, quiet=False):
             quiet or print("        nominal")
             model_data[planet]["nominal-evo"] = pd.read_csv(f)
 
+            # correct neongooey carbon if needed
+            if model == "neongooey":
+                model_data[planet]["nominal-evo"] = correct_neongooey_carbon(model_data[planet]["nominal-evo"], "nominal")
+
         # for each H/C combination
         for Hk in ["Hhigh", "Hmid", "Hlow"]:
             for Ck in ["Chigh", "Cmid", "Clow"]:
@@ -187,6 +231,12 @@ def load_model_data(model:str, quiet=False):
                     f = os.path.join(model_dir,  f"evolution-{model}-{planet}-grid-{Hk}-data.csv") # no carbon
                     if os.path.isfile(f):
                         model_data[planet][f"{k}-evo"] = pd.read_csv(f)
+                    else:
+                        f = None
+
+                # correct neongooey carbon if needed
+                if model == "neongooey" and f is not None:
+                    model_data[planet][f"{k}-evo"] = correct_neongooey_carbon(model_data[planet][f"{k}-evo"], Ck)
 
                 # atmosphere profile data
                 for tau in [1,2,3,4,5,6,7,8,9]:
